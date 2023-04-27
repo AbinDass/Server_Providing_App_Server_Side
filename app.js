@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", userRouter);
 app.use("/admin", adminRouter);
-const DB = `mongodb://127.0.0.1:27017/serviceApp`;
+const DB = process.env.MYDB;
 //database connection
 mongoose
     .connect(DB, {
