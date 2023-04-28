@@ -15,7 +15,7 @@ import fs from "fs";
 const app = express();
 dotenv.config({ path: "./.env" });
 const corsOptions = {
-    origin: "http://localhost:3000",
+    origin: "https://main.dmfmeoyhv4a5g.amplifyapp.com/",
     methods: "GET, POST, PUT, PATCH, DELETE",
     allowedHeaders: "Content-Type, Authorization",
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -51,7 +51,7 @@ const server = app.listen(PORT, (err) => {
 //socket io setting 
 const io = new SocketIO(server, {
     cors:{
-        origin:'http://localhost:3000',
+        origin:'https://main.dmfmeoyhv4a5g.amplifyapp.com/',
         credentials:true
     }
 } )
