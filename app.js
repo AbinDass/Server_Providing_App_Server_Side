@@ -1,4 +1,3 @@
-
 import express from "express";
 
 import mongoose from "mongoose";
@@ -15,7 +14,7 @@ import fs from "fs";
 const app = express();
 dotenv.config({ path: "./.env" });
 const corsOptions = {
-    origin: "https://main.dmfmeoyhv4a5g.amplifyapp.com",
+    origin: "https://fabulous-kheer-d60752.netlify.app",
     methods: "GET, POST, PUT, PATCH, DELETE",
     allowedHeaders: "Content-Type, Authorization",
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -48,69 +47,66 @@ const server = app.listen(PORT, (err) => {
     }
 });
 
-//socket io setting 
+//socket io setting
 const io = new SocketIO(server, {
-    cors:{
-        origin:'https://main.dmfmeoyhv4a5g.amplifyapp.com',
-        credentials:true
-    }
-} )
+    cors: {
+        origin: "https://fabulous-kheer-d60752.netlify.app",
+        credentials: true,
+    },
+});
 
 global.onlineUsers = new Map();
-io.on('connection',(socket) => {
+io.on("connection", (socket) => {
     global.chatsocket = socket;
-    socket.on('addUser',(id)=>{
+    socket.on("addUser", (id) => {
         onlineUsers.set(id, socket.id);
-    })
+    });
 
-socket.on('send-msg', (data)=>{
-    const sendUserSocket = onlineUsers.get(data.to);
-    if(sendUserSocket){
-        socket.to(sendUserSocket).emit('receive-msg', data.message);
-    }
-})
-})
+    socket.on("send-msg", (data) => {
+        const sendUserSocket = onlineUsers.get(data.to);
+        if (sendUserSocket) {
+            socket.to(sendUserSocket).emit("receive-msg", data.message);
+        }
+    });
+});
 
 let users = [];
 
 const addUser = (userId, socketId) => {
-    !users.some((user) => user.userId === userId) && users.push ({userId, socketId});
-}
+    !users.some((user) => user.userId === userId) && users.push({ userId, socketId });
+};
 
 const removeUser = (socketId) => {
-    users = users.filter(user => user.socketId !== socketId);
-}
+    users = users.filter((user) => user.socketId !== socketId);
+};
 
 const getUser = (userId) => {
-    return users.find((user)=> user.userId === userId)
-    
-}
+    return users.find((user) => user.userId === userId);
+};
 
-io.on("connection",(socket) => {
-
-    //connect 
+io.on("connection", (socket) => {
+    //connect
     // io.to(si).emit('welcome', 'this is socket server')
     // take userid an dsocket id from user
-    socket.on('addUser',userId =>{
-            addUser(userId, socket.id);
-            io.emit("getUser",users);
-    })
+    socket.on("addUser", (userId) => {
+        addUser(userId, socket.id);
+        io.emit("getUser", users);
+    });
 
     //send and get nessages
-        socket.on('sendMessage', ({senderId, recieverId, text})=>{
-            console.log(users,"users");
-                const user = getUser(recieverId);
-                if(!user) return
-                io.to(user.socketId).emit('getMessage', {
-                    senderId,
-                    text,
-                })
-        })
+    socket.on("sendMessage", ({ senderId, recieverId, text }) => {
+        console.log(users, "users");
+        const user = getUser(recieverId);
+        if (!user) return;
+        io.to(user.socketId).emit("getMessage", {
+            senderId,
+            text,
+        });
+    });
     // disconnect
-    socket.on('disconnect', ()=>{
-        console.log('a user disconnected');
+    socket.on("disconnect", () => {
+        console.log("a user disconnected");
         removeUser(socket.id);
-        io.emit("getUser",users);
-    })
-})
-
+        io.emit("getUser", users);
+    });
+});
