@@ -20,7 +20,12 @@ dotenv.config({ path: "./.env" });
 //     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 // };
 // app.use(cors(corsOptions));
-app.use(cors({}));
+const corsOptions = {
+    origin: 'https://fabulous-kheer-d60752.netlify.app',
+    credentials: true,
+    optionSuccessStatus: 200,
+  };
+  app.use(cors(corsOptions));
 // app.use(logger("dev"));
 app.use(express.json({ limit: "2MB" }));
 app.use(express.urlencoded({ extended: true }));
