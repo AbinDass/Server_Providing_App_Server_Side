@@ -14,8 +14,8 @@ import fs from "fs";
 const app = express();
 dotenv.config({ path: "./.env" });
 const corsOptions = {
-    // origin: "https://fabulous-kheer-d60752.netlify.app",
-    origin: 'http://localhost:3000',
+    origin: "https://fabulous-kheer-d60752.netlify.app",
+    // origin: 'http://localhost:3000',
     methods: "GET, POST, PUT, PATCH, DELETE",
     allowedHeaders: "Content-Type, Authorization",
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
