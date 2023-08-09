@@ -98,4 +98,4 @@ router.patch("/makeAppointment", updateAppointment);
 router.get("/getAppointment", getAppointment);
 router.get("/getAppointmentStatus", getAppointmentStatus);
 
-export default router;
+export default router;  

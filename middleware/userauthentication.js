@@ -9,7 +9,6 @@ import { promisify } from "util";
 export const verifyToken = async (req, res, next) => {
     try {
         let token = req.headers["authorization"]
-        console.log(token , 9999999)
         console.log('oooo')
         console.log(process.env.JWT_SECRET_KEY, "object")
         

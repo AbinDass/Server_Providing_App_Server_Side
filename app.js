@@ -51,7 +51,8 @@ const server = app.listen(PORT, (err) => {
 //socket io setting
 const io = new SocketIO(server, {
     cors: {
-        origin: "https://fabulous-kheer-d60752.netlify.app",
+        // origin: "https://fabulous-kheer-d60752.netlify.app",
+        origin: "http://localhost:4200",
         credentials: true,
     },
 });
