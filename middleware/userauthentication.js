@@ -16,11 +16,11 @@ export const verifyToken = async (req, res, next) => {
         jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decodedToken) => {
             if (err) {
       // Handle verification error
-      console.error(err,'llllllllllll');
+      
       res.sendStatus(401);
     } else {
         // Token verified successfully
-        console.log(decodedToken,'pppp');
+      
         next();
         // res.sendStatus(200);
 
