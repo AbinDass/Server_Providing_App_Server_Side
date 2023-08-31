@@ -22,7 +22,7 @@ const corsOptions = {
     allowedHeaders: "Content-Type, Authorization",
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(express.json({ limit: "2MB" }));
 app.use(express.urlencoded({ extended: true }));
