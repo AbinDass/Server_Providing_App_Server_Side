@@ -33,11 +33,12 @@ export const createLike = async (req, res) => {
     try {
         const userId = mongoose.Types.ObjectId(req.body.userId);
         const postId = mongoose.Types.ObjectId(req.body.postId);
-
         const likedUser = await Postdb.findOne({
             $and: [{ _id: postId }, { likedUsers: { $elemMatch: { $eq: userId } } }],
         });
+        console.log(likedUser,'???');
         if (likedUser) {
+            console.log('object')
             const post = await Postdb.updateOne({ _id: postId }, { isLiked: false });
             const unLike = await Postdb.updateOne(
                 {
@@ -49,8 +50,9 @@ export const createLike = async (req, res) => {
                 }
             );
 
-            res.status(200).json({ unLike });
+            res.status(200).json({ unLike:true });
         } else {
+            console.log('njan ivde')
             const post = await Postdb.updateOne({ _id: postId }, { isLiked: true }).populate("userId");
             const liked = await Postdb.updateOne(
                 {
@@ -61,7 +63,7 @@ export const createLike = async (req, res) => {
                     isLiked: true,
                 }
             );
-            res.status(200).json({ liked });
+            res.status(200).json({ liked:true });
         }
     } catch (err) {
         res.status(500).json({ err: `internal server error` });

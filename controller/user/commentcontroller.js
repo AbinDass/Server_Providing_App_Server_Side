@@ -6,6 +6,7 @@ export const createComment = async (req, res) => {
         const { comment, userId } = req.body;
         const postId = req.body.postId;
         const Id = mongoose.Types.ObjectId(userId);
+        console.log(userId,Id,'ajfhjsdghfjasdghf')
         const oldcomment = await commentdb.findOne({ postId: postId });
         if (!oldcomment) {
             const newComment = await commentdb({ postId: postId, comments: { UserId: Id, content: comment } });
@@ -23,13 +24,16 @@ export const createComment = async (req, res) => {
 
 export const getAllComments = async (req, res) => {
     try {
+        console.log(req.params.id,'lkjhg')
         const showComments = await commentdb
             .findOne({ postId: req.params.id })
             .populate("comments.UserId")
             .sort({ createdAt: -1 });
         const comments = showComments.comments;
+        console.log(showComments,'ghjghj')
         res.status(200).json(showComments);
     } catch (err) {
+        console.log(err)
         res.status(500).json({ err: `internal server error` });
     }
 };

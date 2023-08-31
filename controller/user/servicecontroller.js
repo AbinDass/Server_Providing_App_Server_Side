@@ -13,7 +13,6 @@ import { verify } from "jsonwebtoken";
 //get all services
 export const getServices = async (req, res) => {
     try {
-        
         const services = await Servicedb.find({ isdeleted: false });
         res.status(200).json({
             getservices: true,
@@ -57,6 +56,7 @@ export const takeSubscription = async (req, res) => {
         const userid = req.body.userId;
         const subscription = await subscriptiondb.findOne({ _id: subid });
         const useris = await subscriptiondb.findOne({ users: { $elemMatch: { userid: userid } } });
+        // console.log(userid,subid,useris,subscription);
         if (!useris) {
             // razorpay instance
             var instance = new Razorpay({
@@ -76,36 +76,41 @@ export const takeSubscription = async (req, res) => {
                         razorpay: true,
                         subscibtiondata: data,
                     };
+            // console.log(useris,data,'user illaa')
 
                     res.json({ response });
                 }
             );
         } else {
+            console.log('entaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
             res.json({ message: "already has a subscription" });
         }
     } catch (err) {
         res.status(500).json({ error: "internal server error" });
     }
 };
-//check subscription expired 
-export const checksubscriptionExpired = async (req, res) =>{
+//check subscription expired
+export const checksubscriptionExpired = async (req, res) => {
     try {
-        const {userId} = req.query
-        const user = await userdb.findOne({_id: userId })
-        if(user.subscriptionexpirydate === Date.now()){
-            await subscriptiondb.findOneAndUpdate({"users.userid": userId},{
-                 $pull: { users: { userid: userId } } 
-            })
+        const { userId } = req.query;
+        const user = await userdb.findOne({ _id: userId });
+        if (user.subscriptionexpirydate === Date.now()) {
+            await subscriptiondb.findOneAndUpdate(
+                { "users.userid": userId },
+                {
+                    $pull: { users: { userid: userId } },
+                }
+            );
             await userdb.findOneAndUpdate(
                 { _id: userId },
                 { role: "user", subscriptiondate: null, subscriptionexpirydate: null }
             );
-            await workerdb.findOneAndUpdate({user: userId}, {approved: false})
+            await workerdb.findOneAndUpdate({ user: userId }, { approved: false });
         }
     } catch (error) {
-        res.status(500).json({ error:"internal server error" });
+        res.status(500).json({ error: "internal server error" });
     }
-}
+};
 //verify and generate razorpay instance
 async function verifyRazorpayPayment(paymentId, orderId, razorpaySignature) {
     try {
@@ -139,34 +144,33 @@ export const verifyPayment = async (req, res) => {
         const orderId = req.body.razorpay_order_id;
         const razorpaySignature = req.body.razorpay_signature;
         const subid = req.body.subId;
+        console.log(paymentId+'',orderId+'',razorpaySignature+'',subid+'',req.body.userId+'','entaaaaaaaaaaaa ibadeeeeeeeee')
+
         const userid = mongoose.Types.ObjectId(req.body.userId);
 
         const useris = await subscriptiondb.findOne({ users: { $elemMatch: { userid: userid } } });
         if (!useris) {
             verifyRazorpayPayment(paymentId, orderId, razorpaySignature).then(async (isValid) => {
-                
                 function calculateExpiryDate(startDate, monthsUntilExpiry) {
-                    const expiryDate = new Date(startDate.getTime()
-                     +
-                    (monthsUntilExpiry * 30 * 24 * 60 * 60 * 1000));
+                    const expiryDate = new Date(startDate.getTime() + monthsUntilExpiry * 30 * 24 * 60 * 60 * 1000);
                     return expiryDate;
-                  }
+                }
 
                 if (isValid) {
                     const fromdate = new Date();
-                    let period
-                    const subscriptionIs = await subscriptiondb.findOne({_id: subid})
-                    console.log(subscriptionIs.price)
-                    if(subscriptionIs.price === 799){
-                        period = 12
-                    }else if (subscriptionIs.price === 499){
-                        period = 6
-                    }else{
-                        period = 3
+                    let period;
+                    const subscriptionIs = await subscriptiondb.findOne({ _id: subid });
+                    console.log(subscriptionIs.price);
+                    if (subscriptionIs.price === 799) {
+                        period = 12;
+                    } else if (subscriptionIs.price === 499) {
+                        period = 6;
+                    } else {
+                        period = 3;
                     }
                     const enddate = calculateExpiryDate(fromdate, period);
-                    
-                    console.log(period)
+
+                    console.log(period);
                     const newSubscription = await subscriptiondb.updateOne(
                         { _id: subid },
                         {
@@ -197,28 +201,50 @@ export const verifyPayment = async (req, res) => {
 
 export const addServiceByuser = async (req, res) => {
     try {
-
-        const { servicetitle, labour, location, distric, state, description, id } = req.body.formdata;
-        // const userid = mongoose.Types.ObjectId(req.body.id);
-        const image = req.body.imageurl;
-        const useris = await workerdb.findOne({ user: id });
-        if (!useris) {
-            const newService = new workerdb({
-                servicetitle: servicetitle,
-                user: id,
-                labour: labour,
-                location: location,
-                distric: distric,
-                state: state,
-                description: description,
-                liecence: image,
-            });
-            newService.save();
-            res.status(200).json(newService);
+        if (req.body.imageurl) {
+            const { servicetitle, labour, location, distric, state, description, id } = req.body.formdata;
+            // const userid = mongoose.Types.ObjectId(req.body.id);
+            const image = req.body.imageurl;
+            const useris = await workerdb.findOne({ user: id });
+            if (!useris) {
+                const newService = new workerdb({
+                    servicetitle: servicetitle,
+                    user: id,
+                    labour: labour,
+                    location: location,
+                    distric: distric,
+                    state: state,
+                    description: description,
+                    liecence: image,
+                });
+                newService.save();
+                res.status(200).json(newService);
+            } else {
+                res.status(200).json({ message: "already you are added the service" });
+            }
         } else {
-            res.status(200).json({ message: "already you are added the service" });
+            console.log(req.body);
+            const { servicetitle, labour, location, district, liesence, state, description, id } = req.body;
+            const useris = await workerdb.findOne({ user: id });
+            if (!useris) {
+                const newService = new workerdb({
+                    servicetitle: servicetitle,
+                    user: id,
+                    labour: labour,
+                    location: location,
+                    distric: district,
+                    state: state,
+                    description: description,
+                    liecence: liesence,
+                });
+                newService.save();
+                res.status(200).json(newService);
+            } else {
+                res.status(200).json({ message: "already you are added the service" });
+            }
         }
     } catch (err) {
+        console.log(err)
         res.status(200).json({ err: "internal server errror" });
     }
 };
@@ -227,9 +253,12 @@ export const getWorkerList = async (req, res) => {
     try {
         const title = req.query.title;
         const district = req.query.district;
-        console.log(district,'----')
-        const workers = await workerdb.find({ servicetitle: title , distric:district, approved: true}).populate("user").sort({ createdAt: -1 });
-        console.log(workers)
+        console.log(district, title, "----");
+        const workers = await workerdb
+            .find({ servicetitle: title, distric: district, approved: true })
+            .populate("user")
+            .sort({ createdAt: -1 });
+        console.log(workers);
         res.status(200).json(workers);
     } catch (err) {
         res.status(500).json({ err: "internal server" });
@@ -393,15 +422,17 @@ export const SearchServiceTitle = async (req, res) => {
     const { userId } = req.query;
     const title = new RegExp(req.query?.title, "i");
     const district = req.query.ditsrict;
-    if(userId=== 'undefined') {
+    console.log(userId, title, district, "[][[[][]]]]");
+    if (userId === "undefined") {
         const search_result = await workerdb.find({ servicetitle: title });
         res.status(200).json(search_result);
-    }else if (req.query.title !== "") {
+    } else if (req.query.title !== "") {
         try {
             const user = await userdb.findOne({ _id: userId });
             const search_result = await workerdb.find({ servicetitle: title, distric: district });
             res.status(200).json(search_result);
         } catch (error) {
+            console.log(error);
             res.status(500).json({ error: "no service matched" });
         }
     } else {
@@ -439,6 +470,7 @@ export const makeAppointment = async (req, res) => {
             descreption: desc,
         });
         appointment.save();
+        console.log(appointment);
         res.status(200).json(appointment);
     } catch (error) {
         res.status(500).json({ error: "internal server error" });
@@ -484,7 +516,7 @@ export const updateAppointment = async (req, res) => {
 export const getAppointmentStatus = async (req, res) => {
     try {
         const { id } = req.query;
-        const myAppointmentStatus = await appointmentdb.find({ user: id }).populate("worker").sort({createdAt: -1});
+        const myAppointmentStatus = await appointmentdb.find({ user: id }).populate("worker").sort({ createdAt: -1 });
         res.status(200).json(myAppointmentStatus);
     } catch (error) {
         res.status(500).json({ error: "internalServer" });

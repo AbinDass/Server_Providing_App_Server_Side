@@ -15,6 +15,7 @@ const app = express();
 dotenv.config({ path: "./.env" });
 const corsOptions = {
     origin: ["https://fabulous-kheer-d60752.netlify.app",
+            "https://master--splendorous-gaufre-9176ef.netlify.app/",
             'http://localhost:3000',
             "http://localhost:4200"],
     methods: "GET, POST, PUT, PATCH, DELETE",
